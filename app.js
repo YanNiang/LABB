@@ -1748,10 +1748,8 @@ function _t(k) { return (_I18N[S.lang]||_I18N.en)[k] || k; }
 var Boot = (function () {
 
   function tryLaunch() {
-    if (S.loaded.auth && S.loaded.settings && S.loaded.shop) {
-      launch();
-    }
-  }
+  launch();
+}
 
   function launch() {
     UI.hide('screen-loading');
@@ -1774,7 +1772,7 @@ var Boot = (function () {
     // Settings + shop load in parallel, do NOT block each other
     setTimeout(function () {
       UI.setLoad('Loading settings...', 30);
-      Settings.load();      // real-time listener — marks loaded.settings
+      // Settings.load();      // real-time listener — marks loaded.settings
       Shop.loadShop();      // one-time fetch — marks loaded.shop
     }, 300);
 
