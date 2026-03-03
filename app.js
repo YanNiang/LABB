@@ -31,7 +31,7 @@
    ▶ Replace the values below with your own Firebase project config.
    ▶ Find them in: Firebase Console → Project Settings → Your apps
 ══════════════════════════════════════════════════════════════ */
-var const firebaseConfig = {
+var
   apiKey: "AIzaSyA9bSbE7ltn7PzhWklmD8W6z-TZ3gfQtqM",
   authDomain: "labb-b3cb1.firebaseapp.com",
   projectId: "labb-b3cb1",
