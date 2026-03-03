@@ -31,16 +31,15 @@
    ▶ Replace the values below with your own Firebase project config.
    ▶ Find them in: Firebase Console → Project Settings → Your apps
 ══════════════════════════════════════════════════════════════ */
-var FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyA9bSbE7ltn7PzhWklmD8W6z-TZ3gfQtqM",
-  authDomain:        "labb-b3cb1.firebaseapp.com",
-  projectId:         "labb-b3cb1",
-  storageBucket:     "labb-b3cb1.firebasestorage.app",
+var const firebaseConfig = {
+  apiKey: "AIzaSyA9bSbE7ltn7PzhWklmD8W6z-TZ3gfQtqM",
+  authDomain: "labb-b3cb1.firebaseapp.com",
+  projectId: "labb-b3cb1",
+  storageBucket: "labb-b3cb1.firebasestorage.app",
   messagingSenderId: "97117319309",
-  appId:             "1:97117319309:web:1fdad90dc53bfa9f59f2c4",
-  measurementId:     "G-GHWZ7HSN01"
+  appId: "1:97117319309:web:1fdad90dc53bfa9f59f2c4",
+  measurementId: "G-GHWZ7HSN01"
 };
-
 /* ══════════════════════════════════════════════════════════════
    §0b  ADMIN ACCESS — hardcoded email
    Only this exact email gets the Admin tab and all admin powers.
