@@ -31,41 +31,31 @@
    ▶ Replace the values below with your own Firebase project config.
    ▶ Find them in: Firebase Console → Project Settings → Your apps
 ══════════════════════════════════════════════════════════════ */
-var
+var FIREBASE_CONFIG = {
   apiKey: "AIzaSyA9bSbE7ltn7PzhWklmD8W6z-TZ3gfQtqM",
   authDomain: "labb-b3cb1.firebaseapp.com",
   projectId: "labb-b3cb1",
   storageBucket: "labb-b3cb1.firebasestorage.app",
   messagingSenderId: "97117319309",
   appId: "1:97117319309:web:1fdad90dc53bfa9f59f2c4",
-  measurementId: "G-GHWZ7HSN01"
+  measurementId: "G-GHWZ7H5N01"
 };
-/* ══════════════════════════════════════════════════════════════
-   §0b  ADMIN ACCESS — hardcoded email
-   Only this exact email gets the Admin tab and all admin powers.
-══════════════════════════════════════════════════════════════ */
+
 var ADMIN_EMAIL = "yannaing.yannaingynt@gmail.com";
 
-/* ══════════════════════════════════════════════════════════════
-   §1  FIREBASE INIT
-   Runs synchronously immediately when app.js is parsed.
-   window.AUTH, window.DB, window.FSV are guaranteed to exist
-   before any other function in this file is called.
-   This is what prevents "firebase is not defined" errors.
-══════════════════════════════════════════════════════════════ */
 (function FIREBASE_INIT() {
-  try {
-    firebase.initializeApp(FIREBASE_CONFIG);
-    window.AUTH = firebase.auth();
-    window.DB   = firebase.firestore();
-    window.FSV  = firebase.firestore.FieldValue;
-    window.FB   = true;
-    console.log('[LABB] Firebase 9.23.0 compat — initialized OK');
-  } catch (e) {
-    window.FB = false;
-    console.error('[LABB] Firebase init FAILED:', e.message);
-  }
-}());
+    try {
+        firebase.initializeApp(FIREBASE_CONFIG);
+        window.AUTH = firebase.auth();
+        window.DB = firebase.firestore();
+        window.FSV = firebase.firestore.FieldValue;
+        window.FB = true;
+        console.log('[LABB] Firebase initialized OK');
+    } catch (e) {
+        window.FB = false;
+        console.error('[LABB] Firebase init FAILED:', e.message);
+    }
+})();
 
 /* ══════════════════════════════════════════════════════════════
    §2  GLOBAL STATE
