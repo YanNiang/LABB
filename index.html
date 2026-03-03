@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#03060D" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>LABB — Play & Earn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="style.css" />
+
+  <!--
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  FIREBASE COMPAT SDK v9.23.0                                ║
+  ║  Three classic <script> tags — NOT ES modules.              ║
+  ║  Order matters: app → auth → firestore                      ║
+  ║  Must appear BEFORE app.js so window.AUTH / window.DB       ║
+  ║  can be set synchronously in FIREBASE_INIT().               ║
+  ╚══════════════════════════════════════════════════════════════╝
+  -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<!-- ░░░░░░░░  AMBIENT LAYER  ░░░░░░░░ -->
+<div id="ambient" aria-hidden="true"></div>
+<canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: LOADING
+     Stays visible until Firebase Auth resolves
+     AND globalSettings + shop are fetched.
+══════════════════════════════════════════ -->
+<div id="screen-loading" class="screen">
+  <div class="ld-wrap">
+    <div class="ld-logo">
+      <div class="ld-ring"></div>
+      <div class="ld-coin">🪙</div>
+    </div>
+    <div class="ld-title">LABB</div>
+    <div class="ld-tagline">Play · Earn · Redeem</div>
+    <div class="ld-bar-track"><div id="ld-bar" class="ld-bar-fill"></div></div>
+    <div id="ld-status" class="ld-status">Initializing...</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: AUTH
+══════════════════════════════════════════ -->
+<div id="screen-auth" class="screen hidden">
+  <div class="auth-glow"></div>
+  <div class="auth-center">
+
+    <div class="auth-brand">
+      <div class="auth-icon">🪙</div>
+      <h1 class="auth-brand-name">LABB</h1>
+      <p class="auth-brand-sub">Your Daily Coin Earning Hub</p>
+    </div>
+
+    <div class="auth-card">
+      <!-- Tab switcher -->
+      <div class="tab-switcher">
+        <button class="tsw-btn active" id="tsw-in"  onclick="Auth.tab('in')">Sign In</button>
+        <button class="tsw-btn"        id="tsw-up"  onclick="Auth.tab('up')">Register</button>
+      </div>
+
+      <!-- Sign In panel -->
+      <div id="panel-in">
+        <div class="field-wrap"><label class="flbl">Email</label>
+          <input class="finput" id="si-email" type="email" placeholder="you@email.com" autocomplete="email" /></div>
+        <div class="field-wrap"><label class="flbl">Password</label>
+          <input class="finput" id="si-pass"  type="password" placeholder="••••••••"
+            onkeydown="if(event.key==='Enter')Auth.signIn()" /></div>
+        <button class="btn btn-teal bfull" onclick="Auth.signIn()">Sign In →</button>
+      </div>
+
+      <!-- Register panel -->
+      <div id="panel-up" class="hidden">
+        <div class="field-wrap"><label class="flbl">Display Name</label>
+          <input class="finput" id="su-name"  placeholder="Your nickname" /></div>
+        <div class="field-wrap"><label class="flbl">Email</label>
+          <input class="finput" id="su-email" type="email" placeholder="you@email.com" /></div>
+        <div class="field-wrap"><label class="flbl">Password</label>
+          <input class="finput" id="su-pass"  type="password" placeholder="min 6 chars"
+            onkeydown="if(event.key==='Enter')Auth.signUp()" /></div>
+        <button class="btn btn-teal bfull" onclick="Auth.signUp()">Create Account →</button>
+      </div>
+
+      <div class="auth-or"><span>or</span></div>
+      <button class="btn btn-ghost bfull" onclick="Auth.guest()">🎮 &nbsp; Continue as Guest</button>
+      <p id="auth-err" class="auth-err"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: MAIN APP
+══════════════════════════════════════════ -->
+<div id="screen-app" class="screen hidden">
+
+  <!-- ── Header ── -->
+  <header id="app-bar">
+    <span class="app-logo">LABB</span>
+    <div class="bar-right">
+      <div class="coin-pill" onclick="UI.openModal('modal-history')">
+        <span class="cpill-icon">🪙</span>
+        <span class="cpill-val" id="hdr-coins">0</span>
+      </div>
+      <button class="lang-btn" id="lang-toggle" onclick="UI.cycleLang()">EN</button>
+    </div>
+  </header>
+
+  <!-- ── Pages ── -->
+  <main id="pages">
+    <div id="pg-home"    class="page"></div>
+    <div id="pg-games"   class="page hidden"></div>
+    <div id="pg-shop"    class="page hidden"></div>
+    <div id="pg-earn"    class="page hidden"></div>
+    <div id="pg-profile" class="page hidden"></div>
+    <div id="pg-admin"   class="page hidden"></div>
+  </main>
+
+  <!-- ── Bottom Nav ── -->
+  <nav id="bot-nav">
+    <button class="bnav active" id="bn-home"    onclick="UI.nav('home')"   ><span class="bni">🏠</span><span class="bnl">Home</span></button>
+    <button class="bnav"        id="bn-games"   onclick="UI.nav('games')"  ><span class="bni">🎮</span><span class="bnl">Games</span></button>
+    <button class="bnav"        id="bn-shop"    onclick="UI.nav('shop')"   ><span class="bni">🛍️</span><span class="bnl">Shop</span></button>
+    <button class="bnav"        id="bn-earn"    onclick="UI.nav('earn')"   ><span class="bni">📺</span><span class="bnl">Earn</span></button>
+    <button class="bnav"        id="bn-profile" onclick="UI.nav('profile')"><span class="bni">👤</span><span class="bnl">Me</span></button>
+    <button class="bnav hidden" id="bn-admin"   onclick="UI.nav('admin')"  ><span class="bni">⚙️</span><span class="bnl">Admin</span></button>
+  </nav>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════ -->
+
+<!-- Game modal -->
+<div id="modal-game" class="mo-overlay hidden" onclick="Games.overlayClose(event)">
+  <div class="mo-box"><button class="mo-x" onclick="Games.close()">✕</button>
+    <div id="game-slot"></div></div>
+</div>
+
+<!-- Coin history modal -->
+<div id="modal-history" class="mo-overlay hidden" onclick="UI.oclose(event,'modal-history')">
+  <div class="mo-box"><button class="mo-x" onclick="UI.closeModal('modal-history')">✕</button>
+    <h3 class="mo-title">🪙 Coin History</h3>
+    <div id="hist-list"></div></div>
+</div>
+
+<!-- Video ad modal -->
+<div id="modal-ad" class="mo-overlay hidden">
+  <div class="mo-box mo-sm">
+    <div class="ad-wrap">
+      <div class="ad-big-icon">📺</div>
+      <h3 class="mo-title">Watching Ad...</h3>
+      <p class="mo-sub" id="ad-label">Earn coins for watching!</p>
+      <div class="ad-frame">
+        <div class="ad-frame-icon">🎬</div>
+        <div class="prog-track"><div id="ad-prog" class="prog-fill" style="width:0%"></div></div>
+        <p id="ad-timer" class="ad-timer-txt">Starting...</p>
+      </div>
+      <button id="ad-claim" class="btn btn-teal bfull" disabled onclick="Earn.claimAd()">
+        CLAIM +<span id="ad-coins-lbl">0</span> 🪙
+      </button>
+      <button class="btn btn-ghost bfull" style="margin-top:8px" onclick="Earn.skipAd()">Skip</button>
+    </div>
+  </div>
+</div>
+
+<!-- Shop buy confirm modal -->
+<div id="modal-buy" class="mo-overlay hidden" onclick="UI.oclose(event,'modal-buy')">
+  <div class="mo-box mo-sm">
+    <button class="mo-x" onclick="UI.closeModal('modal-buy')">✕</button>
+    <div class="buy-wrap">
+      <div id="buy-img" class="buy-img-box">🎁</div>
+      <h3 id="buy-name" class="mo-title" style="margin-top:12px"></h3>
+      <p  id="buy-desc" class="mo-sub"></p>
+      <div class="buy-row"><span>Cost</span><span id="buy-cost" class="buy-price"></span></div>
+      <div class="buy-row"><span>Your Balance</span><span id="buy-bal" class="buy-bal"></span></div>
+      <button class="btn btn-teal bfull" onclick="Shop.confirmBuy()">Confirm Purchase</button>
+      <button class="btn btn-ghost bfull" style="margin-top:8px" onclick="UI.closeModal('modal-buy')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin: edit user balance
+     HIDDEN BY DEFAULT — only opened from Admin > Users table -->
+<div id="modal-edit-bal" class="mo-overlay hidden" onclick="UI.oclose(event,'modal-edit-bal')">
+  <div class="mo-box mo-sm">
+    <button class="mo-x" onclick="UI.closeModal('modal-edit-bal')">✕</button>
+    <h3 class="mo-title">✏️ Edit Balance</h3>
+    <p class="mo-sub">User: <strong id="ebal-name"></strong></p>
+    <div class="field-wrap"><label class="flbl">New Coin Balance</label>
+      <input class="finput" id="ebal-val" type="number" min="0" /></div>
+    <button class="btn btn-amber bfull" onclick="Admin.saveBalance()">Save</button>
+  </div>
+</div>
+
+<!-- Admin: add/edit shop item modal -->
+<div id="modal-item" class="mo-overlay hidden" onclick="UI.oclose(event,'modal-item')">
+  <div class="mo-box">
+    <button class="mo-x" onclick="UI.closeModal('modal-item')">✕</button>
+    <h3 id="item-mo-title" class="mo-title">➕ Add Shop Item</h3>
+    <input type="hidden" id="item-edit-id" />
+    <div class="field-wrap"><label class="flbl">Name *</label>
+      <input class="finput" id="item-name" placeholder="Premium Badge" /></div>
+    <div class="field-wrap"><label class="flbl">Image (URL or emoji)</label>
+      <input class="finput" id="item-img"  placeholder="https://... or 🏆" /></div>
+    <div class="form2">
+      <div class="field-wrap"><label class="flbl">Price (coins) *</label>
+        <input class="finput" id="item-price" type="number" min="1" /></div>
+      <div class="field-wrap"><label class="flbl">Stock *</label>
+        <input class="finput" id="item-stock" type="number" min="0" /></div>
+    </div>
+    <div class="field-wrap"><label class="flbl">Description</label>
+      <input class="finput" id="item-desc" placeholder="Short description..." /></div>
+    <div class="form2">
+      <div class="field-wrap"><label class="flbl">Expiry Date</label>
+        <input class="finput" id="item-expiry" type="date" /></div>
+      <div class="field-wrap"><label class="flbl">Status</label>
+        <select class="finput" id="item-status">
+          <option value="active">Active</option>
+          <option value="out_of_stock">Out of Stock</option>
+          <option value="hidden">Hidden</option>
+        </select></div>
+    </div>
+    <button class="btn btn-teal bfull" onclick="Admin.saveItem()">Save Item</button>
+  </div>
+</div>
+
+<!-- Admin: global settings modal -->
+<div id="modal-settings" class="mo-overlay hidden" onclick="UI.oclose(event,'modal-settings')">
+  <div class="mo-box">
+    <button class="mo-x" onclick="UI.closeModal('modal-settings')">✕</button>
+    <h3 class="mo-title">⚙️ Global Settings</h3>
+    <p class="mo-sub">Changes sync to all users in real-time.</p>
+
+    <div class="settings-section">
+      <div class="ss-title">📺 Ads</div>
+      <div class="ss-row"><span>Ads Enabled</span>
+        <label class="toggle"><input type="checkbox" id="gs-ads-enabled" /><span class="tslider"></span></label></div>
+      <div class="ss-row"><span>Short Ad Reward (coins)</span>
+        <input class="finput fs" id="gs-ad-short" type="number" /></div>
+      <div class="ss-row"><span>Long Ad Reward (coins)</span>
+        <input class="finput fs" id="gs-ad-long" type="number" /></div>
+      <div class="ss-row"><span>Full Ad Reward (coins)</span>
+        <input class="finput fs" id="gs-ad-full" type="number" /></div>
+    </div>
+
+    <div class="settings-section">
+      <div class="ss-title">🎮 Game Toggles &amp; Rewards</div>
+      <div id="gs-games-list"></div>
+    </div>
+
+    <div class="settings-section">
+      <div class="ss-title">🏆 Leaderboard Prizes</div>
+      <div class="ss-row"><span>1st Place (coins)</span>
+        <input class="finput fs" id="gs-lb1" type="number" /></div>
+      <div class="ss-row"><span>2nd Place (coins)</span>
+        <input class="finput fs" id="gs-lb2" type="number" /></div>
+      <div class="ss-row"><span>3rd Place (coins)</span>
+        <input class="finput fs" id="gs-lb3" type="number" /></div>
+    </div>
+
+    <div class="settings-section">
+      <div class="ss-title">🛍️ Shop Limits</div>
+      <div class="ss-row"><span>Max purchases/day per user</span>
+        <input class="finput fs" id="gs-buy-limit" type="number" /></div>
+    </div>
+
+    <button class="btn btn-teal bfull" onclick="Admin.saveSettings()">Save All Settings</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
