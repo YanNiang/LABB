@@ -32,14 +32,16 @@
    ▶ Find them: Firebase Console → Project Settings → Your Apps
 ══════════════════════════════════════════════════════════════ */
 var FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyD96Lpj138cGESOzydl1QM4DUIgtF1KkeI",
-  authDomain:        "labb-app-final.firebaseapp.com",
-  projectId:         "labb-app-final",
-  storageBucket:     "labb-app-final.firebasestorage.app",
-  messagingSenderId: "319557420293",
-  appId:             "1:319557420293:web:a55c83e92858fae655e36c",
-  measurementId:     "G-B6FC0FJKY3"
-};//
+  apiKey: "AIzaSyCi_S-XjK7u8D8T7i4z9p5k4m2n1o0p9q8",
+  authDomain: "labb-v6.firebaseapp.com",
+  projectId: "labb-v6",
+  storageBucket: "labb-v6.appspot.com",
+  messagingSenderId: "1071286958444",
+  appId: "1:1071286958444:web:0d359c1c6186940082f718",
+  measurementId: "G-D1H5S0J1H8"
+};
+
+// 
 
 /* ══════════════════════════════════════════════════════════════
    §0b  ADMIN EMAIL — hardcoded, never changes
