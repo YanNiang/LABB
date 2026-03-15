@@ -39,7 +39,7 @@ var FIREBASE_CONFIG = {
   messagingSenderId: "319557420293",
   appId:             "1:319557420293:web:a55c83e92858fae655e36c",
   measurementId:     "G-B6FC0FJKY3"
-};
+};//
 
 /* ══════════════════════════════════════════════════════════════
    §0b  ADMIN EMAIL — hardcoded, never changes
